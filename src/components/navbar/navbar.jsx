@@ -25,7 +25,7 @@ function NavBar ({isAuthenticated, onLogout, userInfo}) {
                         <>
                             <div>menuitems</div>
                             <div className='relative'>
-                                <button onClick={handleDropdown} className='border border-[#848484] hover:bg-[#848484] p-2 rounded-full font-semibold'>{userInfo.initials}</button>
+                                <button onClick={handleDropdown} className='bg-gray-100 text-[#848484] border hover:text-black hover:bg-gray-300 p-2 rounded-full font-semibold'>{userInfo.initials}</button>
                                 {isDropdownOpen && (
                                     <div className='z-10 absolute shadow-md bg-white right-0 mt-3 divide-y'>
                                             <div className='py-3 pl-2 pr-20'>
