@@ -1,5 +1,6 @@
-import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail} from "../services/api/apiWorkspace";
+import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace} from "../services/api/apiWorkspace";
 import useAuth from "../hooks/useAuth";
+import useDebounce from "../hooks/useDebounce";
 import NavBar from "../components/navbar/navbar";
 import Popup from "../components/popup/popup";
 import { useEffect, useState } from "react";
@@ -8,12 +9,21 @@ function Workspace () {
     const [workspaces, setWorkspaces] = useState([]);
     const [workspaceName, setWorkspaceName] = useState('');
     const [selectedWorkspace, setSelectedWorkspace] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [isCreateWorkspacePopupOpen, setIsCreateWorkspacePopupOpen] = useState(false);
+    const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 1000);
+    const [searchResults, setSearchResults] = useState([]);
     const { deauthenticateUser, isAuthenticated, getUserFromLocalStorage } = useAuth();
 
     const toggleCreateWorkspacePopup = () => {
       setIsCreateWorkspacePopupOpen(!isCreateWorkspacePopupOpen);
+    };
+
+    const toggleSearchPopup = () => {
+      setIsSearchPopupOpen(!isSearchPopupOpen);
     };
 
     const handleCreateNewWorkspace = async () => {
@@ -23,6 +33,9 @@ function Workspace () {
         console.log("new workspace", response.data);
         toggleCreateWorkspacePopup();
       } catch (error) {
+        if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
+          deauthenticateUser(error.response.data.error);
+        }
         console.error("faile to create workspace", error);
       } 
     };
@@ -32,14 +45,40 @@ function Workspace () {
         const response = await getWorkspaceDetail(workspaceId);
         setSelectedWorkspace(response.data.data);
       } catch (error) {
+        if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
+          deauthenticateUser(error.response.data.error);
+        }
         console.error('error fetching workspace detail', error);
       }
     };
-   
+    
+    useEffect(() => {
+      const handleSearch = async () => {
+        try {
+          setIsSearchLoading(true);
+          const response = await getSearchWorkspace(debouncedSearchQuery);
+          setSearchResults(response.data.data);
+        } catch (error) {
+          if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
+            deauthenticateUser(error.response.data.error);
+          }
+        } finally {
+          setIsSearchLoading(false);
+        }
+      };
+
+      if (debouncedSearchQuery.trim() !== '') {
+        handleSearch();
+      } else {
+        setSearchResults([]);
+      }
+
+    }, [debouncedSearchQuery]);
+
     useEffect(() => { 
       const fetchWorkspaces = async () => {
           try {
-            setIsLoading(true);
+            setIsWorkspaceLoading(true);
             const response = await getWorkspaceList();
             setWorkspaces(response.data.data);
             console.log(response.data.data);
@@ -49,7 +88,7 @@ function Workspace () {
             }
             console.error("Error fetching workspaces", error.response.data);
           } finally {
-            setIsLoading(false);
+            setIsWorkspaceLoading(false);
           }
         };
 
@@ -62,13 +101,13 @@ function Workspace () {
           <div className="flex flex-row font-raleway">
             <div className="border border-t-0 h-screen p-4 space-y-6 w-1/5">
               <div>
-                <button className="flex flex-row items-center text-sm border px-6 py-1 bg-gray-100 text-[#848484] hover:border-black hover:text-black">
+                <button onClick={toggleSearchPopup} className="flex flex-row items-center  justify-center w-full text-sm border px-6 py-1 bg-gray-100 text-[#848484] hover:border-black hover:text-black">
                   <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
                   </div>
-                  <div>Workspace or Survey</div>
+                  <div>Workspace</div>
                 </button>
               </div>
               <div className="flex flex-row items-center justify-between">
@@ -81,7 +120,7 @@ function Workspace () {
               </div>
               <div className="divide-y">
                 <div className="h-96 overflow-auto">
-                  {isLoading ? ("loading...."
+                  {isWorkspaceLoading ? ("loading...."
                   ) : (
                     <ul className="text-sm tracking-wide">
                       {workspaces.map(workspace => (
@@ -90,7 +129,7 @@ function Workspace () {
                     </ul>
                   )}
                 </div>
-                <div>submenu</div>
+                <div className="h-56"></div>
                 </div>
             </div>
             <div className="px-10 py-5 w-screen">
@@ -140,6 +179,25 @@ function Workspace () {
             <div className="flex flex-col items-center space-y-5">
               <input value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)} placeholder="new workspace" className="border p-2 text-md rounded-sm w-96 focus:outline-none focus:border-[#000000]"/>
               <button onClick={handleCreateNewWorkspace} className="py-2 px-6 bg-black text-white text-sm font-semibold tracking-wider rounded-sm self-end hover:bg-[#3d3d3d]">Create Workspace</button>
+            </div>
+          </div>
+        </Popup>
+        <Popup isOpen={isSearchPopupOpen} onClose={toggleSearchPopup}>
+          <div className="flex flex-col space-y-3">
+            <div className="mt-4 space-y-2">
+              <div className="font-semibold">Search Workspace</div>
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="search workspace or survey" className="border p-2 text-sm rounded-sm w-96 focus:outline-none focus:border-[#000000]"/>
+            </div>
+            <div className="text-sm text-gray-700">
+              {isSearchLoading ? (
+                "searching..."
+              ):(
+                <ul className="space-y-1">
+                  {searchResults.map(result => (
+                    <li key={result._id}>{result.name}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </Popup>

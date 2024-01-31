@@ -29,7 +29,7 @@ function NavBar ({isAuthenticated, onLogout, userInfo}) {
                                 {isDropdownOpen && (
                                     <div className='z-10 absolute shadow-md bg-white right-0 mt-3 divide-y'>
                                             <div className='py-3 pl-2 pr-20'>
-                                                <div className='text-lg font-semibold'>{userInfo.name}</div>
+                                                <div className='text-md font-semibold'>{userInfo.name}</div>
                                                 <div className='font-semibold'>{userInfo.email}</div>
                                             </div>
                                             <div className='py-3 pl-2 pr-20'>

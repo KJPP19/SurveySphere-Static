@@ -17,7 +17,7 @@ function App() {
             <Route exact path='/signup' element={<SignUp/>}/>
             <Route element={<ProtectedRoute/>}>
               <Route exact path='/workspace' element={<Workspace/>}/>
-              <Route exact path='/survey'/>
+              <Route exact path='/survey/surveyId'/>
               <Route exact path='/share'/>
             </Route>
           </Routes>
