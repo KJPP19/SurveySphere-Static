@@ -1,8 +1,10 @@
-import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace} from "../services/api/apiWorkspace";
+import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace} from "../services/api/apiWorkspace";
 import useAuth from "../hooks/useAuth";
+import useToggle from "../hooks/useToggle";
 import useDebounce from "../hooks/useDebounce";
 import NavBar from "../components/navbar/navbar";
 import Popup from "../components/popup/popup";
+import DropDown from "../components/dropdown/dropdown";
 import { useEffect, useState } from "react";
 
 function Workspace () {
@@ -11,33 +13,34 @@ function Workspace () {
     const [selectedWorkspace, setSelectedWorkspace] = useState(null);
     const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [isCreateWorkspacePopupOpen, setIsCreateWorkspacePopupOpen] = useState(false);
-    const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
+    const createWorkspacePopup = useToggle(false);
+    const searchPopup = useToggle(false);
+    const workspaceDropdown = useToggle(false);
+    const isEditing = useToggle(false);
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 1000);
     const [searchResults, setSearchResults] = useState([]);
     const { deauthenticateUser, isAuthenticated, getUserFromLocalStorage } = useAuth();
 
-    const toggleCreateWorkspacePopup = () => {
-      setIsCreateWorkspacePopupOpen(!isCreateWorkspacePopupOpen);
-    };
-
-    const toggleSearchPopup = () => {
-      setIsSearchPopupOpen(!isSearchPopupOpen);
+    const handleSessionExpiration = (error) => {
+      if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
+        deauthenticateUser(error.response.data.error);
+      }
+      return error;
     };
 
     const handleCreateNewWorkspace = async () => {
       try {
         const response = await createNewWorkspace(workspaceName);
-        setWorkspaces([...workspaces, response.data.data])
+        setWorkspaces(prevWorkspaces => [...prevWorkspaces, response.data.data])
         console.log("new workspace", response.data);
-        toggleCreateWorkspacePopup();
+        createWorkspacePopup.toggle();
       } catch (error) {
-        if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
-          deauthenticateUser(error.response.data.error);
-        }
+        handleSessionExpiration(error);
         console.error("faile to create workspace", error);
-      } 
+      } finally {
+        setWorkspaceName('');
+      }
     };
 
     const handleWorkspaceClick = async (workspaceId) => {
@@ -45,11 +48,22 @@ function Workspace () {
         const response = await getWorkspaceDetail(workspaceId);
         setSelectedWorkspace(response.data.data);
       } catch (error) {
-        if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
-          deauthenticateUser(error.response.data.error);
-        }
+        handleSessionExpiration(error);
         console.error('error fetching workspace detail', error);
       }
+    };
+
+    const handleUpdateWorkspaceName = async (workspaceId) => {
+      if (workspaceName.trim() !== '') {
+        try {
+          const response = await updateWorkspace(workspaceId, workspaceName);
+          setWorkspaces((prevWorkspaces) => {return prevWorkspaces.map((workspace) => workspace._id === response.data.data._id ? response.data.data : workspace);});
+          setSelectedWorkspace(response.data.data);
+        } catch (error) {
+          console.error("error put request", error);
+        }
+      }
+      isEditing.toggle();
     };
     
     useEffect(() => {
@@ -59,9 +73,7 @@ function Workspace () {
           const response = await getSearchWorkspace(debouncedSearchQuery);
           setSearchResults(response.data.data);
         } catch (error) {
-          if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
-            deauthenticateUser(error.response.data.error);
-          }
+          handleSessionExpiration(error);
         } finally {
           setIsSearchLoading(false);
         }
@@ -83,9 +95,7 @@ function Workspace () {
             setWorkspaces(response.data.data);
             console.log(response.data.data);
           } catch (error) {
-            if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
-                deauthenticateUser(error.response.data.error);
-            }
+            handleSessionExpiration(error);
             console.error("Error fetching workspaces", error.response.data);
           } finally {
             setIsWorkspaceLoading(false);
@@ -101,7 +111,7 @@ function Workspace () {
           <div className="flex flex-row font-raleway">
             <div className="border border-t-0 h-screen p-4 space-y-6 w-1/5">
               <div>
-                <button onClick={toggleSearchPopup} className="flex flex-row items-center  justify-center w-full text-sm border px-6 py-1 bg-gray-100 text-[#848484] hover:border-black hover:text-black">
+                <button onClick={searchPopup.toggle} className="flex flex-row items-center  justify-center w-full text-sm border px-6 py-1 bg-gray-100 text-[#848484] hover:border-black hover:text-black">
                   <div>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -112,7 +122,7 @@ function Workspace () {
               </div>
               <div className="flex flex-row items-center justify-between">
                 <div className="font-semibold text-sm">Workspace</div>
-                <button onClick={toggleCreateWorkspacePopup} className="border p-1 rounded-sm text-[#848484] bg-gray-100 hover:border-black hover:text-black">
+                <button onClick={createWorkspacePopup.toggle} className="border p-1 rounded-sm text-[#848484] bg-gray-100 hover:border-black hover:text-black">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
@@ -138,14 +148,28 @@ function Workspace () {
                   <div className="divide-y">
                     <div className="space-y-20 mb-6">
                       <div className="flex flex-row items-center space-x-10">
-                          <div className="font-semibold text-lg tracking-wider">
-                            {selectedWorkspace.name}
-                          </div>
-                          <button>
+                          {isEditing.isOpen ? (
+                            <input autoFocus value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)} onBlur={() => handleUpdateWorkspaceName(selectedWorkspace._id)} className="border font-semibold text-lg tracking-wider rounded-md p-2 focus:outline-none"/>
+                          ) : (
+                            <button onClick={() => {setWorkspaceName(selectedWorkspace.name), isEditing.toggle()}} className="border font-semibold text-lg tracking-wider rounded-md p-2 hover:bg-gray-200">
+                              {selectedWorkspace.name}
+                            </button>
+                          )}
+                          <button onClick={workspaceDropdown.toggle} className="text-gray-500 hover:text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                             </svg>
                           </button>
+                          <DropDown isOpen={workspaceDropdown.isOpen}>
+                            <>
+                              <div className="text-xs py-2 px-7 tracking-wider hover:bg-gray-200">
+                                rename
+                              </div>
+                              <div className="text-xs py-2 px-7 tracking-wider hover:bg-gray-200 hover:text-red-700">
+                                delete
+                              </div>
+                            </>
+                          </DropDown>
                       </div>
                       <div className="flex flex-row items-center justify-between">
                         <button className="px-3 py-2 font-semibold bg-black text-white text-sm tracking-wide rounded-sm hover:bg-[#3d3d3d]">Create new survey</button>
@@ -173,7 +197,7 @@ function Workspace () {
               )}
             </div>
           </div>
-        <Popup isOpen={isCreateWorkspacePopupOpen} onClose={toggleCreateWorkspacePopup}>
+        <Popup isOpen={createWorkspacePopup.isOpen} onClose={createWorkspacePopup.toggle}>
           <div className="flex flex-col space-y-6">
             <div className="font-semibold text-xl">create new workspace</div>
             <div className="flex flex-col items-center space-y-5">
@@ -182,7 +206,7 @@ function Workspace () {
             </div>
           </div>
         </Popup>
-        <Popup isOpen={isSearchPopupOpen} onClose={toggleSearchPopup}>
+        <Popup isOpen={searchPopup.isOpen} onClose={() => {setSearchQuery(''); searchPopup.toggle();}}>
           <div className="flex flex-col space-y-3">
             <div className="mt-4 space-y-2">
               <div className="font-semibold">Search Workspace</div>

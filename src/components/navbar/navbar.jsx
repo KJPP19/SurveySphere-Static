@@ -1,15 +1,12 @@
 /* eslint-disable react/prop-types */
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import useToggle from '../../hooks/useToggle';
+import DropDown from '../dropdown/dropdown';
 
 function NavBar ({isAuthenticated, onLogout, userInfo}) {
     
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const profileDropdown = useToggle(false);
     const navigate = useNavigate();
-    
-    const handleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
 
     const handleLogout = () => {
         navigate("/login");
@@ -24,22 +21,22 @@ function NavBar ({isAuthenticated, onLogout, userInfo}) {
                     {isAuthenticated ? (
                         <>
                             <div>menuitems</div>
-                            <div className='relative'>
-                                <button onClick={handleDropdown} className='bg-gray-100 text-[#848484] border hover:text-black hover:bg-gray-300 p-2 rounded-full font-semibold'>{userInfo.initials}</button>
-                                {isDropdownOpen && (
-                                    <div className='z-10 absolute shadow-md bg-white right-0 mt-3 divide-y'>
-                                            <div className='py-3 pl-2 pr-20'>
-                                                <div className='text-md font-semibold'>{userInfo.name}</div>
-                                                <div className='font-semibold'>{userInfo.email}</div>
-                                            </div>
-                                            <div className='py-3 pl-2 pr-20'>
-                                                <button>Settings</button>
-                                            </div>
-                                            <div className='py-3 pl-2 pr-20'>
-                                                <button onClick={handleLogout} className='text-red-700 font-semibold'>Logout</button>
-                                            </div>
-                                    </div>
-                                )}
+                            <div>
+                                <button onClick={profileDropdown.toggle} className='bg-gray-100 text-[#848484] border hover:text-black hover:bg-gray-300 p-2 rounded-full font-semibold'>{userInfo.initials}</button>
+                                <DropDown isOpen={profileDropdown.isOpen}>
+                                    <>
+                                        <div className='py-3 pl-2 pr-20'>
+                                            <div className='text-md font-semibold'>{userInfo.name}</div>
+                                            <div className='font-semibold'>{userInfo.email}</div>
+                                        </div>
+                                        <div className='py-3 pl-2 pr-20'>
+                                            <button>Settings</button>
+                                        </div>
+                                        <div className='py-3 pl-2 pr-20'>
+                                            <button onClick={handleLogout} className='text-red-700 font-semibold'>Logout</button>
+                                        </div>
+                                    </>
+                                </DropDown>
                             </div>
                             
                         </>
