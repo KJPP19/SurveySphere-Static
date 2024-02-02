@@ -17,9 +17,10 @@ function App() {
             <Route exact path='/signup' element={<SignUp/>}/>
             <Route element={<ProtectedRoute/>}>
               <Route exact path='/workspace' element={<Workspace/>}/>
-              <Route exact path='/survey/surveyId'/>
+              <Route exact path='/survey/:surveyId'/>
               <Route exact path='/share'/>
             </Route>
+            <Route exact path='/survey/public/:shareId'/>
           </Routes>
         </AuthProvider>
       </Router>

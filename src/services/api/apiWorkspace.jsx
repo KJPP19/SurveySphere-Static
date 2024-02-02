@@ -20,4 +20,8 @@ const updateWorkspace = async (workspaceId, workspaceName) => {
     return api.put(`/workspace/${workspaceId}`, {name: workspaceName});
 };
 
-export {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace};
+const deleteWorkspace = async (workspaceId) => {
+    return api.delete(`/workspace/${workspaceId}`);
+};
+
+export {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace, deleteWorkspace};

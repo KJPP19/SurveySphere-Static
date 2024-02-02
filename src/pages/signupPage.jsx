@@ -23,9 +23,9 @@ function SignUp () {
     }
 
     const registerFields = [
-        {id: 'firstname', label: 'Firstname', type: 'text', placeholder: 'firstname'},
-        {id: 'lastname', label: 'Lastname', type: 'text', placeholder: 'lastname'},
-        {id: 'email', label: 'Email Address', type: 'email', placeholder: 'name@mail.com'},
+        {id: 'firstname', label: 'Firstname', type: 'text', placeholder: 'created'},
+        {id: 'lastname', label: 'Lastname', type: 'text', placeholder: 'by'},
+        {id: 'email', label: 'Email Address', type: 'email', placeholder: 'keanponio@mail.com'},
         {id: 'password', label: 'Password', type: 'password', placeholder: '••••••••'},
         {id: 'confirmpassword', label: 'Confirm Password', type: 'password', placeholder: '••••••••'},
     ];
