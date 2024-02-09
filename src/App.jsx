@@ -5,6 +5,9 @@ import LandingPage from './pages/landingPage';
 import LogIn from './pages/loginPage';
 import SignUp from './pages/signupPage';
 import Workspace from './pages/workspacePage';
+import Survey from './pages/surveyPage';
+import Share from './pages/sharePage';
+import Results from './pages/resultPage';
 
 function App() {
 
@@ -17,9 +20,11 @@ function App() {
             <Route exact path='/signup' element={<SignUp/>}/>
             <Route element={<ProtectedRoute/>}>
               <Route exact path='/workspace' element={<Workspace/>}/>
-              <Route exact path='/survey'/>
-              <Route exact path='/share'/>
+              <Route exact path='/surveys/:surveyId/create' element={<Survey/>}/>
+              <Route exact path='/surveys/:surveyId/share' element={<Share/>}/>
+              <Route exact path='/surveys/:surveyId/results' element={<Results/>}/>
             </Route>
+            <Route exact path='/survey/public/:shareId'/>
           </Routes>
         </AuthProvider>
       </Router>
