@@ -1,19 +1,26 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace, deleteWorkspace} from "../services/api/apiWorkspace";
+import { createNewSurvey } from "../services/api/apiSurvey";
+import { useNavigate } from 'react-router-dom';
 import useAuth from "../hooks/useAuth";
 import useToggle from "../hooks/useToggle";
 import useDebounce from "../hooks/useDebounce";
 import NavBar from "../components/navbar/navbar";
 import Popup from "../components/popup/popup";
 import DropDown from "../components/dropdown/dropdown";
+import updateArrayItemsById from "../utils/helpers/updateArrayState";
 import { useEffect, useState } from "react";
 
 function Workspace () {
+    const navigate = useNavigate();
     const [workspaces, setWorkspaces] = useState([]);
     const [workspaceName, setWorkspaceName] = useState('');
+    const [surveyName, setSurveyName] = useState('');
     const [selectedWorkspace, setSelectedWorkspace] = useState(null);
     const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [isCreateSurveyLoading, setIsCreateSurveyLoading] = useState(false);
     const createWorkspacePopup = useToggle(false);
     const createSurveyPopup = useToggle(false);
     const searchPopup = useToggle(false);
@@ -59,7 +66,7 @@ function Workspace () {
       if (workspaceName.trim() !== '') {
         try {
           const response = await updateWorkspace(workspaceId, workspaceName);
-          setWorkspaces((prevWorkspaces) => {return prevWorkspaces.map((workspace) => workspace._id === response.data.data._id ? response.data.data : workspace);});
+          setWorkspaces(prevWorkspaces => updateArrayItemsById(prevWorkspaces, response.data.data._id, response.data.data));
           setSelectedWorkspace(response.data.data);
         } catch (error) {
           handleSessionExpiration(error);
@@ -71,18 +78,19 @@ function Workspace () {
       isEditing.toggle();
     };
 
-    /*const handleCreateNewSurvey = async (workspaceId) => {
+    const handleCreateNewSurvey = async (workspaceId) => {
       try {
-        //set loading to true
-        //const surveyData = {title: survaynamestate, workspaceId: workspaceId}
-        //response = await createSurvey(surveyData)
-        //if (response.status === 201) {const surveyId = response.data.data._id, navigate("/survey/surveyId")}
+        setIsCreateSurveyLoading(true);
+        const surveyData = {title: surveyName, workspaceId: workspaceId}
+        const response = await createNewSurvey(surveyData);
+        const surveyId = response.data.data._id;
+        navigate(`/surveys/${surveyId}/create`);
       } catch (error) {
-        //console.error();
+        console.error();
       } finally {
-        //setloading to false
+        setIsCreateSurveyLoading(false);
       }
-    };*/
+    };
 
     const handleDeleteWorkspace = async (workspaceId) => {
       try {
@@ -159,7 +167,10 @@ function Workspace () {
               </div>
               <div className="divide-y">
                 <div className="h-96 overflow-auto">
-                  {isWorkspaceLoading ? ("loading...."
+                  {isWorkspaceLoading ? (
+                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-white opacity-80">
+                      <div className="border-gray-300 h-10 w-10 animate-spin rounded-full border-2 border-t-black"></div>
+                    </div>
                   ) : (
                     <ul className="text-sm tracking-wide">
                       {workspaces.map(workspace => (
@@ -168,7 +179,9 @@ function Workspace () {
                     </ul>
                   )}
                 </div>
-                <div className="h-56"></div>
+                <div className="h-56">
+                  <div className="font-semibold mt-3 text-sm">Responses</div>
+                </div>
                 </div>
             </div>
             <div className="px-10 py-5 w-screen">
@@ -204,7 +217,7 @@ function Workspace () {
                         <button onClick={createSurveyPopup.toggle} className="px-3 py-2 font-semibold bg-black text-white text-sm tracking-wide rounded-sm hover:bg-[#3d3d3d]">Create new survey</button>
                         <div className="bg-gray-100 text-[#848484] px-3 py-2 rounded-sm tracking-wide flex flex-row items-center space-x-10 text-sm border  hover:border-black hover:text-black cursor-pointer">
                           <div>
-                            Filter
+                            Sort by
                           </div>
                           <div>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
@@ -217,7 +230,7 @@ function Workspace () {
                     <div className="py-4">
                       <ul className="grid grid-cols-7 gap-3">
                         {selectedWorkspace.survey.map(survey => (
-                          <li className="border p-3 font-semibold text-sm rounded-md hover:shadow-md" key={survey._id}>{survey.title}</li>
+                          <li onClick={() => {navigate(`/surveys/${survey._id}/create`)}} className="border p-3 font-semibold text-sm rounded-md hover:shadow-md" key={survey._id}>{survey.title}</li>
                         ))}
                       </ul>
                     </div>
@@ -231,7 +244,7 @@ function Workspace () {
             <div className="font-semibold text-xl">create new workspace</div>
             <div className="flex flex-col items-center space-y-5">
               <input value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)} placeholder="new workspace" className="border p-2 text-md rounded-sm w-96 focus:outline-none focus:border-[#000000]"/>
-              <button onClick={handleCreateNewWorkspace} className="py-2 px-6 bg-black text-white text-sm font-semibold tracking-wider rounded-sm self-end hover:bg-[#3d3d3d]">Create Workspace</button>
+              <button onClick={handleCreateNewWorkspace} className="py-2 px-6 bg-black text-white text-sm font-semibold tracking-wider rounded-sm self-end hover:bg-[#3d3d3d] disabled:opacity-10" disabled={!workspaceName}>Create Workspace</button>
             </div>
           </div>
         </Popup>
@@ -261,8 +274,8 @@ function Workspace () {
               <div className="text-md text-[#3d3d3d]">provide a survey title</div>
             </div>
             <div className="flex flex-col items-center space-y-5">
-              <input placeholder="survey title" className="border p-2 text-md rounded-sm w-96 focus:outline-none focus:border-[#000000]"/>
-              <button className="py-2 px-6 bg-black text-white text-sm font-semibold tracking-wider rounded-sm self-end hover:bg-[#3d3d3d]">Proceed</button>
+              <input value={surveyName} onChange={(e) => setSurveyName(e.target.value)} placeholder="survey title" className="border p-2 text-md rounded-sm w-96 focus:outline-none focus:border-[#000000]"/>
+              <button onClick={() => handleCreateNewSurvey(selectedWorkspace._id)} className="py-2 px-6 bg-black text-white text-sm font-semibold tracking-wider rounded-sm self-end hover:bg-[#3d3d3d] disabled:opacity-10" disabled={!surveyName}>Proceed</button>
             </div>
           </div>
         </Popup>
