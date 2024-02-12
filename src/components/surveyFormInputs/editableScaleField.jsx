@@ -55,7 +55,10 @@ const ScaleInput = ({question}) => {
             {scaleRange && scaleRange.length > 0 ? (
                 <div className='flex flex-row space-x-1'>
                     {range.map((value, index) => (
-                        <div className='border p-4' key={index}>{value}</div>
+                        <div className='flex-grow space-x-1' key={index}>
+                            <input disabled className='hidden' type='radio' id={`scale-${index}`}/>
+                            <label className='flex justify-center border p-2 border-black' htmlFor={`scale-${index}`}>{value}</label>
+                        </div>
                     ))}
                 </div>
             ) : (

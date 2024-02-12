@@ -48,9 +48,9 @@ const ChoiceInput = ({question}) => {
         <div className="w-full space-y-1">
             {choiceList.map((choice, index) => (
                 <div className="flex items-center group justify-between p-1 hover:bg-gray-200" key={index}>
-                    <div className="flex flex-row items-center space-x-2">
-                        <input disabled type="radio" id={`choice-${index}`} name="choices" value={choice}/>
-                        <div className='text-sm text-wrap' htmlFor={`choice-${index}`}>{choice}</div>
+                    <div className="flex flex-row items-center">
+                        <input className='hidden' disabled type="radio" id={`choice-${index}`} name="choices" value={choice}/>
+                        <label className='text-sm py-1 px-2 text-wrap' htmlFor={`choice-${index}`}>{choice}</label>
                     </div>
                     <button onClick={() => handleDeleteChoice(choice)} className='opacity-0 group-hover:opacity-100 hover:text-red-700 text-red-500'>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">

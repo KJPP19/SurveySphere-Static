@@ -8,4 +8,8 @@ const fetchSurveyDetail = async (surveyId) => {
     return api.get(`/surveys/${surveyId}`)
 };
 
-export { createNewSurvey, fetchSurveyDetail };
+const enableSurvey = async (surveyId, value) => {
+    return api.put(`/surveys/${surveyId}`, {isEnabled: value})
+};
+
+export { createNewSurvey, fetchSurveyDetail, enableSurvey };

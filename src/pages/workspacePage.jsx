@@ -8,6 +8,7 @@ import useDebounce from "../hooks/useDebounce";
 import NavBar from "../components/navbar/navbar";
 import Popup from "../components/popup/popup";
 import DropDown from "../components/dropdown/dropdown";
+import EditableField from "../components/button/editableField";
 import updateArrayItemsById from "../utils/helpers/updateArrayState";
 import { useEffect, useState } from "react";
 
@@ -143,7 +144,7 @@ function Workspace () {
       }, [deauthenticateUser]);
 
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen w-screen overflow-hidden">
         <NavBar isAuthenticated={isAuthenticated} onLogout={deauthenticateUser} userInfo={getUserFromLocalStorage()}/>
           <div className="flex flex-row font-raleway">
             <div className="border border-t-0 h-screen p-4 space-y-6 w-1/5">
@@ -190,13 +191,13 @@ function Workspace () {
                   <div className="divide-y">
                     <div className="space-y-20 mb-6">
                       <div className="flex flex-row items-center space-x-10">
-                          {isEditing.isOpen ? (
-                            <input autoFocus value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)} onBlur={() => handleUpdateWorkspaceName(selectedWorkspace._id)} className="border font-semibold text-lg tracking-wider rounded-md p-2 focus:outline-none"/>
-                          ) : (
-                            <button onClick={() => {setWorkspaceName(selectedWorkspace.name), isEditing.toggle()}} className="border font-semibold text-lg tracking-wider rounded-md p-2 hover:bg-gray-200">
-                              {selectedWorkspace.name}
-                            </button>
-                          )}
+                          <EditableField 
+                            isEditing={isEditing} 
+                            value={workspaceName} 
+                            inputChange={(e) => setWorkspaceName(e.target.value)} 
+                            onFinishEditing={() => handleUpdateWorkspaceName(selectedWorkspace._id)} 
+                            handleButtonClick={() => {setWorkspaceName(selectedWorkspace.name); isEditing.toggle()}} buttonText={selectedWorkspace.name}
+                          />
                           <button onClick={workspaceDropdown.toggle} className="text-gray-500 hover:text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
