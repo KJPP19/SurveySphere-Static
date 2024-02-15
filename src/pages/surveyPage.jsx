@@ -6,7 +6,7 @@ import updateArrayItemsById from "../utils/helpers/updateArrayState";
 import { useParams, useLocation } from "react-router-dom"; 
 import { useState, useEffect } from "react";
 import { fetchSurveyDetail, enableSurvey } from "../services/api/apiSurvey";
-import { createNewQuestion, fetchQuestionDetail, updateQuestion, toggleQuestionRequired, updateQuestionType } from "../services/api/apiQuestion"; 
+import { createNewQuestion, fetchQuestionDetail, updateQuestion, toggleQuestionRequired, updateQuestionType, deleteQuestion } from "../services/api/apiQuestion"; 
 import  ChoiceInput  from "../components/surveyFormInputs/editableChoiceField";
 import ScaleInput from "../components/surveyFormInputs/editableScaleField";
 import EditableField from "../components/button/editableField";
@@ -126,6 +126,16 @@ function Survey () {
         }
     };
 
+    const handleDeleteQuestion = async(questionId) => {
+        try {
+            await deleteQuestion(questionId);
+            setQuestionList((prevQuestions) => {return prevQuestions.filter((question) => question._id !== questionId);});
+            setSelectedQuestion('');
+        } catch (error) {
+            handleSessionExpiration(error);
+        }
+    };
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
@@ -179,26 +189,32 @@ function Survey () {
                 </div>
                 <div className="grow p-24 bg-gray-50">
                     {selectedQuestion && (
-                        <div className="shadow-md overflow-y-auto bg-white h-full w-full p-16 space-y-16">
-                            <div>    
-                                <EditableField 
-                                isEditing={isEditingQuestionTitle} 
-                                value={questionTitle} 
-                                inputChange={(e) => setQuestionTitle(e.target.value)} 
-                                onFinishEditing={() => handleUpdateQuestionTitle(selectedQuestion._id)} 
-                                handleButtonClick={() => {selectedQuestion.title && setQuestionTitle(selectedQuestion.title); isEditingQuestionTitle.toggle()}} buttonText={selectedQuestion.title} placeholder="Put your question here"/>
+                        <div className="relative shadow-md bg-white h-full w-full">
+                            <button onClick={() => handleDeleteQuestion(selectedQuestion._id)} className="absolute text-red-500 bg-red-200 -top-3 -right-3 p-1 rounded-full hover:bg-red-300 hover:text-red-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div className="p-16 space-y-16 h-full w-full overflow-y-auto">
+                                <div>    
+                                    <EditableField 
+                                    isEditing={isEditingQuestionTitle} 
+                                    value={questionTitle} 
+                                    inputChange={(e) => setQuestionTitle(e.target.value)} 
+                                    onFinishEditing={() => handleUpdateQuestionTitle(selectedQuestion._id)} 
+                                    handleButtonClick={() => {selectedQuestion.title && setQuestionTitle(selectedQuestion.title); isEditingQuestionTitle.toggle()}} buttonText={selectedQuestion.title} placeholder="Put your question here"/>
+                                </div>
+                                <div>
+                                    {selectedQuestion.questiontype === 'form' && (
+                                        <input disabled className="border-b p-1 w-4/5 bg-white focus:outline-none" type="text" placeholder="Your Answer Here."/> 
+                                    )}
+                                    {selectedQuestion.questiontype === 'essay' && (
+                                        <textarea disabled rows="6" className="border bg-white border-gray-200 p-2 rounded-md w-4/5 text-md resize-none" placeholder="Your Answer Here."/>
+                                    )}
+                                    {selectedQuestion.questiontype === 'choice' && <ChoiceInput question={selectedQuestion}/>}
+                                    {selectedQuestion.questiontype === 'scale' && <ScaleInput question={selectedQuestion}/>}
+                                </div>
                             </div>
-                            <div>
-                                {selectedQuestion.questiontype === 'form' && (
-                                    <input disabled className="border-b p-1 w-4/5 bg-white focus:outline-none" type="text" placeholder="Your Answer Here."/> 
-                                )}
-                                {selectedQuestion.questiontype === 'essay' && (
-                                    <textarea disabled rows="6" className="border bg-white border-gray-200 p-2 rounded-md w-4/5 text-md resize-none" placeholder="Your Answer Here."/>
-                                )}
-                                {selectedQuestion.questiontype === 'choice' && <ChoiceInput question={selectedQuestion}/>}
-                                {selectedQuestion.questiontype === 'scale' && <ScaleInput question={selectedQuestion}/>}
-                            </div>
-
                         </div>
                     )}
                 </div>
@@ -239,6 +255,9 @@ function Survey () {
                                         <input type="checkbox" id="check" className="sr-only peer" checked={isQuestionRequired} onChange={() => handleQuestionRequiredChange(selectedQuestion._id)}/>
                                         <span className={`w-4/12 h-4/6 bg-white absolute rounded-full left-1 top-1 ${isQuestionRequired ? 'peer-checked:left-7' : ''} transition-all duration-500`}></span>
                                     </label>
+                                </div>
+                                <div>
+                                    
                                 </div>
                             </div>
                         </>

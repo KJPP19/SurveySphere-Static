@@ -32,4 +32,8 @@ const updateQuestionType = async(questionId, questionType) => {
     return api.put(`/questions/${questionId}`, {questiontype: questionType});
 };
 
-export { createNewQuestion, fetchQuestionDetail, updateQuestion, addChoiceInQuestion, deleteChoiceInQuestion, addRangeInQuestion, toggleQuestionRequired, updateQuestionType };
+const deleteQuestion = async(questionId) => {
+    return api.delete(`/questions/${questionId}`);
+};
+
+export { createNewQuestion, fetchQuestionDetail, updateQuestion, addChoiceInQuestion, deleteChoiceInQuestion, addRangeInQuestion, toggleQuestionRequired, updateQuestionType, deleteQuestion };

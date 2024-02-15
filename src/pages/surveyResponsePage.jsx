@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchSurveyByShareId } from "../services/api/apiSurveyResponse";
+import { fetchSurveyByShareId, submitResponse } from "../services/api/apiSurveyResponse";
 import { useParams } from "react-router-dom";
 
 function SurveyResponse () {
@@ -9,12 +9,12 @@ function SurveyResponse () {
     const [ isShareIdNotFound, setIsShareIdNotFound ] = useState(false);
     const [ isSurveyLoading, setIsSurveyLoading ] = useState(false);
     const [ isSurveyEnabled, setIsSurveyEnabled ] = useState(false);
+    const [ isSubmitted, setIsSubmitted ] = useState(false);
+    const [ isSubmitting, setIsSubmitting ] = useState(false);
     const [ responseData, setResponseData ] = useState({
         survey: "",
         responses: [],
     });
-
-    console.log(currentQuestionIndex, questionList.length);
 
     useEffect(() => {
         const fetchSurveyDetail = async () => {
@@ -53,13 +53,25 @@ function SurveyResponse () {
 
     const handleAnswerChange = (e) => {
         const { value } = e.target;
-        const questionId = questionList[currentQuestionIndex]._id;
+        const question = questionList[currentQuestionIndex]._id;
 
         setResponseData(prevState => {
             const updatedResponses = [...prevState.responses];
-            updatedResponses[currentQuestionIndex] = { questionId, answer: value };
+            updatedResponses[currentQuestionIndex] = { question, answer: value };
             return {...prevState, responses: updatedResponses};
         });
+    };
+
+    const handleSubmitResponse = async() => {
+        try {
+            setIsSubmitting(true);
+            await submitResponse(responseData);
+            setIsSubmitted(true);
+        } catch (error) {
+            console.error("failed to submit response", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleNextPage = () => {
@@ -72,6 +84,11 @@ function SurveyResponse () {
 
     return (
         <div className="font-raleway">
+            {isSubmitted && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-white">
+                <div className="font-semibold text-lg">Thank you for your valuable feedback! Your response has been successfully submitted</div>
+                </div>
+            )}
             {isSurveyLoading ? (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-white">
                     <div className="border-gray-300 h-10 w-10 animate-spin rounded-full border-2 border-t-black"></div>
@@ -95,11 +112,14 @@ function SurveyResponse () {
                                                 <div  className="text-lg">{currentQuestionIndex+1}</div>
                                                 <div>
                                                     {currentQuestionIndex === questionList.length - 1 && (
-                                                        <button className="py-2 px-3 bg-black text-white font-semibold text-sm rounded-md hover:opacity-70">submit response</button>
+                                                        <button onClick={handleSubmitResponse} disabled={isSubmitting} className="py-2 px-3 bg-black text-white font-semibold text-sm rounded-md hover:opacity-70 disabled:opacity-20">{isSubmitting ? 'submitting...' : 'submit response'}</button>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="text-justify text-lg font-semibold tracking-wider py-1">{questionList[currentQuestionIndex].title}</div>
+                                            {questionList[currentQuestionIndex].isRequired && (
+                                                <div className="rounded-md text-sm bg-gray-100 py-2 px-3 text-gray-600 w-fit">Required Field</div>
+                                            )}
                                         </div>
                                         <div>
                                         {questionList[currentQuestionIndex].questiontype === 'form' && (
@@ -138,7 +158,7 @@ function SurveyResponse () {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                     </svg>
                                 </button>
-                                <button className="disabled:text-gray-300" onClick={handleNextPage} disabled={currentQuestionIndex === questionList.length - 1}>
+                                <button className="disabled:text-gray-300" onClick={handleNextPage} disabled={currentQuestionIndex === questionList.length - 1 || (questionList[currentQuestionIndex].isRequired && !responseData.responses[currentQuestionIndex]?.answer)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                     </svg>

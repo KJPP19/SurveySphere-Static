@@ -147,7 +147,7 @@ function Workspace () {
       <div className="flex flex-col h-screen w-screen overflow-hidden">
         <NavBar isAuthenticated={isAuthenticated} onLogout={deauthenticateUser} userInfo={getUserFromLocalStorage()}/>
           <div className="flex flex-row font-raleway">
-            <div className="border border-t-0 h-screen p-4 space-y-6 w-1/5">
+            <div className="border border-t-0 h-screen p-4 space-y-6 sm:w-1/2 md:w-1/3 lg:w-1/5">
               <div>
                 <button onClick={searchPopup.toggle} className="flex flex-row items-center  justify-center w-full text-sm border px-6 py-1 bg-gray-100 text-[#848484] hover:border-black hover:text-black">
                   <div>
@@ -185,12 +185,12 @@ function Workspace () {
                 </div>
                 </div>
             </div>
-            <div className="px-10 py-5 w-screen">
+            <div className="px-4 py-2 md:px-10 md:py-5 lg:px-16 lg:py-8 w-screen">
               {selectedWorkspace && (
                 <>
                   <div className="divide-y">
                     <div className="space-y-20 mb-6">
-                      <div className="flex flex-row items-center space-x-10">
+                      <div className="flex flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
                           <EditableField 
                             isEditing={isEditing} 
                             value={workspaceName} 
@@ -229,7 +229,7 @@ function Workspace () {
                       </div>  
                     </div>
                     <div className="py-4">
-                      <ul className="grid grid-cols-7 gap-3">
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl-grid-cols-5 gap-3">
                         {selectedWorkspace.survey.map(survey => (
                           <li onClick={() => {navigate(`/surveys/${survey._id}/create`)}} className="border p-3 font-semibold text-sm rounded-md hover:shadow-md" key={survey._id}>{survey.title}</li>
                         ))}

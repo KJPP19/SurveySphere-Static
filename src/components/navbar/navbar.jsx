@@ -24,7 +24,7 @@ function NavBar ({isAuthenticated, onLogout, userInfo, menuItems, currentPath}) 
                                 <div className='flex flex-row space-x-5 mr-5'>
                                     {menuItems.map((item => (
                                         <div key={item.id}>
-                                            <Link to={item.link} className={currentPath && currentPath === item.link ? 'font-semibold text-black border-b-black border-b-2' : 'text-gray-300'}>{item.name}</Link>
+                                            <Link to={item.link} className={currentPath && currentPath === item.link ? 'font-semibold text-black border-b-black border-b-2' : 'text-gray-500'}>{item.name}</Link>
                                         </div>
                                     )))}
                                 </div>
