@@ -103,7 +103,7 @@ function SurveyResponse () {
                     </div>
                 ) : (
                     <div className="p-4 md:p-8 lg:p-16 h-screen flex justify-center items-center">
-                        <div className="h-full w-8/12 bg-white flex flex-col justify-between">
+                        <div className="h-full w-8/12 bg-white flex flex-col justify-between shadow-lg rounded-md p-10">
                             {questionList.length > 0 && (
                                 <>
                                     <div className="space-y-16">

@@ -12,7 +12,7 @@ function Share () {
         const [ copyStatus, setCopyStatus ] = useState('');
         const [ isLinkLoading, setIsLinkLoading ] = useState(false);
         const [ isSurveyEnabled, setIsSurveyEnabled ] = useState(false);
-        const publicSurveyLink = `http://localhost:5173/survey/public/${shareId}`;
+        const publicSurveyLink = `https://surveysphere-i9te.onrender.com/survey/public/${shareId}`;
 
         const options = [
             {id:'workspace', name:'Workspace', link: '/workspace'},

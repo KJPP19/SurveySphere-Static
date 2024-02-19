@@ -14,7 +14,7 @@ function NavBar ({isAuthenticated, onLogout, userInfo, menuItems, currentPath}) 
     };
     
     return (
-        <nav className="p-2 border w-screen border-t-0">
+        <nav className="p-2 border w-screen border-t-0 bg-white">
             <div className="container mx-auto flex items-center justify-between">
                 <Link to="/" className="font-raleway font-semibold">SurveySphere</Link>
                 <div className="flex items-center space-x-4 font-raleway text-sm">
@@ -50,8 +50,8 @@ function NavBar ({isAuthenticated, onLogout, userInfo, menuItems, currentPath}) 
                         </>
                     ) : (
                         <>
-                            <Link to="/login" className="cursor-pointer hover:text-[#3d3d3d]">Log in</Link>
-                            <Link to="/signup" className="bg-[#000000] p-2 rounded-md text-[#FFFFFF] cursor-pointer hover:bg-[#3d3d3d]">Sign up</Link>
+                            <Link to="/login" className="cursor-pointer hover:text-[#3d3d3d] font-semibold tracking-wider">Log in</Link>
+                            <Link to="/signup" className="bg-[#000000] p-2 rounded-md text-[#FFFFFF] font-semibold tracking-wider cursor-pointer hover:bg-[#3d3d3d]">Sign up</Link>
                         </>
                     )}
                 </div>

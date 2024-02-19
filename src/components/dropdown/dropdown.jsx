@@ -4,7 +4,7 @@ const DropDown = ({isOpen, children}) => {
         <>
             {isOpen && (
                 <div className="relative">
-                    <div className='z-10 absolute shadow-md bg-white right-0 mt-3 divide-y'>
+                    <div className='z-10 absolute shadow-md bg-white -right-4 mt-3 divide-y'>
                         {children}
                     </div>
                 </div>

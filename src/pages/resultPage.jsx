@@ -1,7 +1,8 @@
 import NavBar from "../components/navbar/navbar";
 import useAuth from "../hooks/useAuth";
 import { useParams, useLocation } from "react-router-dom";
-import { getResultSummary } from "../services/api/apiResult";
+import { getResultSummary, getResultTable } from "../services/api/apiResult";
+import { fetchSurveyDetail } from "../services/api/apiSurvey";
 import { useState, useEffect } from "react"; 
 
 function Results () {
@@ -10,6 +11,8 @@ function Results () {
     const location = useLocation();
     const [ selectedSubMenu, setSelectedSubMenu ] = useState('summary');
     const [ resultSummary, setResultSummary ] = useState([]);
+    const [ questionList, setQuestionList ] = useState([]);
+    const [ resultTable, setResultTable ] = useState([]);
     const [ isSummaryLoading, setIsSummaryLoading ] = useState(false);
     const options = [
         {id:'workspace', name:'Workspace', link: '/workspace'},
@@ -17,6 +20,8 @@ function Results () {
         {id:'share', name:'Share', link: `/surveys/${surveyId}/share`},
         {id:'results', name:'Results', link: `/surveys/${surveyId}/results`},
     ];
+
+    console.log(resultTable);
 
     const timePassed = (date) => {
         const answeredAtDate = new Date(date);
@@ -35,27 +40,49 @@ function Results () {
         }
     };
 
+    const handleSessionExpiration = (error) => {
+        if(error.response.data.status === 401 && error.response.data.error === "your session has expired, please login again"){
+          deauthenticateUser(error.response.data.error);
+        }
+        return error;
+    };
+
     const choicePercentage = (total, choiceCount) => {
         const percentage = (choiceCount / total) * 100;
         return Math.round(percentage);
     };
 
+    const generateRange = (labels) => {
+        const minValue = Math.min(...labels);
+        const maxValue = Math.max(...labels);
+        const range = [];
+        for(let i = minValue; i<= maxValue; i++){
+            range.push(i);
+        }
+        return range;
+    }
+
     useEffect(() => {
-        const fetchSummary = async () => {
+        const fetchResponse = async () => {
             try {
                 setIsSummaryLoading(true);
-                const response = await getResultSummary(surveyId);
-                setResultSummary(response.data.data.responses);
+                const responseSummary = await getResultSummary(surveyId);
+                const questions = await fetchSurveyDetail(surveyId);
+                const responseTable = await getResultTable(surveyId);
+                setResultSummary(responseSummary.data.data.responses);
+                setQuestionList(questions.data.data.questions);
+                setResultTable(responseTable.data.data.responses);
             } catch (error) {
+                handleSessionExpiration(error);
                 console.error(error);
             } finally {
                 setIsSummaryLoading(false);
             }
         }
 
-        fetchSummary();
-
-    }, [surveyId])
+        fetchResponse();
+        
+    }, [surveyId]);
 
     return (
         <div className="h-screen w-screen overflow-hidden font-raleway">
@@ -64,7 +91,7 @@ function Results () {
                 <button onClick={() => setSelectedSubMenu('summary')} className={`p-1 text-sm ${selectedSubMenu && selectedSubMenu === 'summary' ? ' border-b border-b-black' : 'text-gray-500 border-b border-b-gray-100'}`}>Summary</button>
                 <button onClick={() => setSelectedSubMenu('table')} className={`p-1 text-sm ${selectedSubMenu && selectedSubMenu === 'table' ? ' border-b border-b-black' : 'text-gray-500 border-b border-b-gray-100'}`}>Table</button>
             </div>
-            <div className="overflow-y-auto h-5/6">
+            <div className="overflow-y-auto w-full h-5/6">
                 {selectedSubMenu === 'summary' && (
                     <div className="w-full py-10 space-y-6 flex flex-col justify-center items-center">
                         <div className="font-semibold text-3xl tracking-wider">Summary</div>
@@ -123,6 +150,27 @@ function Results () {
                                                         })}
                                                     </div>
                                                 )}
+                                                {result.questionData.questiontype === 'scale' && (
+                                                    <div className="p-2 space-y-4">
+                                                        <div className="flex justify-between">
+                                                            {generateRange(result.questionData.labels).map((label, labelIndex) => {
+                                                                const choiceCount = result.answers.filter(answer => answer.value === label.toString()).length;
+                                                                const totalResponses = result.answers.length;
+                                                                const percentage = choicePercentage(totalResponses, choiceCount);
+                                                                return (
+                                                                    <div className="flex items-center flex-col" key={labelIndex}>
+                                                                        <div>{label}</div>
+                                                                        <div className="text-sm text-gray-400">{choiceCount} res.</div>
+                                                                        <div className="h-24 w-6 bg-gray-200 rounded-md relative">
+                                                                            <div className="absolute bottom-0 bg-black rounded-md" style={{height: `${percentage}%`, width: '100%'}}></div>
+                                                                        </div>
+                                                                        <div className="text-sm text-gray-400">{percentage}%</div>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -132,7 +180,39 @@ function Results () {
                     </div>
                 )}
                 {selectedSubMenu === 'table' && (
-                    <div>this is the table page</div>
+                    <div className="w-full h-full p-16 space-y-4">
+                        <div>header options</div>
+                        <div className="rounded-md overflow-x-auto overflow-y-auto p-2 h-full w-full bg-gray-50">
+                            <table className="table-auto text-left w-full bg-white">
+                                <thead>
+                                    <tr className="text-xs text-gray-700">
+                                        <th className="px-2 py-4 border" scope="col">Date</th>
+                                        {questionList.map(question => (
+                                            <th className="whitespace-nowrap px-2 py-4 border" scope="col" key={question._id}>{question.title}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {resultTable.map((result, index) => (
+                                        <tr key={index}>
+                                            <td className="whitespace-nowrap p-2 border-b">
+                                                <div className="text-gray-800">{result._id.date}</div>
+                                                <div className="text-xs font-semibold tracking-wider text-gray-400">{result._id.time}</div>
+                                            </td>
+                                            {questionList.map(question => {
+                                                const answer = result.answers && result.answers.find(
+                                                    answer => answer.question === question._id
+                                                );
+                                                return (
+                                                    <td className="whitespace-nowrap p-2 border-b text-xs tracking-wide" key={questionList._id}>{answer ? answer.value : '------'}</td>
+                                                )
+                                            })}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>
