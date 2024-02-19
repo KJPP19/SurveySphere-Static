@@ -8,6 +8,7 @@ import Workspace from './pages/workspacePage';
 import Survey from './pages/surveyPage';
 import Share from './pages/sharePage';
 import Results from './pages/resultPage';
+import SurveyResponse from './pages/surveyResponsePage';
 
 function App() {
 
@@ -24,7 +25,7 @@ function App() {
               <Route exact path='/surveys/:surveyId/share' element={<Share/>}/>
               <Route exact path='/surveys/:surveyId/results' element={<Results/>}/>
             </Route>
-            <Route exact path='/survey/public/:shareId'/>
+            <Route exact path='/survey/public/:shareId' element={<SurveyResponse/>}/>
           </Routes>
         </AuthProvider>
       </Router>

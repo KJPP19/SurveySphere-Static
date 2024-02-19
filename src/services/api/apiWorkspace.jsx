@@ -24,4 +24,8 @@ const deleteWorkspace = async (workspaceId) => {
     return api.delete(`/workspace/${workspaceId}`);
 };
 
-export {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace, deleteWorkspace};
+const getSortedSurveysByWorkspace = async (workspaceId, sortOption) => {
+    return api.get(`/workspace/${workspaceId}?sort=${sortOption}`);
+};
+
+export {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace, deleteWorkspace, getSortedSurveysByWorkspace};

@@ -24,4 +24,16 @@ const addRangeInQuestion = async(questionId, minValue, maxValue) => {
     return api.put(`/questions/${questionId}`, {range: [minValue, maxValue]});
 };
 
-export { createNewQuestion, fetchQuestionDetail, updateQuestion, addChoiceInQuestion, deleteChoiceInQuestion, addRangeInQuestion };
+const toggleQuestionRequired = async(questionId, value) => {
+    return api.put(`/questions/${questionId}`, {isRequired: value});
+};
+
+const updateQuestionType = async(questionId, questionType) => {
+    return api.put(`/questions/${questionId}`, {questiontype: questionType});
+};
+
+const deleteQuestion = async(questionId) => {
+    return api.delete(`/questions/${questionId}`);
+};
+
+export { createNewQuestion, fetchQuestionDetail, updateQuestion, addChoiceInQuestion, deleteChoiceInQuestion, addRangeInQuestion, toggleQuestionRequired, updateQuestionType, deleteQuestion };
