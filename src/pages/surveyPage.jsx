@@ -6,7 +6,7 @@ import updateArrayItemsById from "../utils/helpers/updateArrayState";
 import { useParams, useLocation } from "react-router-dom"; 
 import { useState, useEffect } from "react";
 import { fetchSurveyDetail, enableSurvey } from "../services/api/apiSurvey";
-import { createNewQuestion, fetchQuestionDetail, updateQuestion, toggleQuestionRequired, updateQuestionType, deleteQuestion } from "../services/api/apiQuestion"; 
+import { createNewQuestion, updateQuestion, toggleQuestionRequired, updateQuestionType, deleteQuestion } from "../services/api/apiQuestion"; 
 import  ChoiceInput  from "../components/surveyFormInputs/editableChoiceField";
 import ScaleInput from "../components/surveyFormInputs/editableScaleField";
 import EditableField from "../components/button/editableField";
@@ -24,7 +24,7 @@ function Survey () {
     const questionTypesPopup = useToggle(false);
     const isEditingQuestionTitle = useToggle(false);
     const isQuestionTypeDropdwon = useToggle(false);
-    
+
     const options = [
         {id:'workspace', name:'Workspace', link: '/workspace'},
         {id:'create', name:'Create', link: `/surveys/${surveyId}/create`},
@@ -91,13 +91,8 @@ function Survey () {
     };
 
     const handleQuestionClick = async (questionId) => {
-        try {
-            const response = await fetchQuestionDetail(questionId);
-            setSelectedQuestion(response.data.data);
-            setIsQuestionRequired(response.data.data.isRequired);
-        } catch (error) {
-            handleSessionExpiration(error);
-        }
+        const clickedQuestion = questionList.find(question => question._id === questionId);
+        setSelectedQuestion(clickedQuestion);
     };
 
     const handleUpdateQuestionTitle = async (questionId) => {
@@ -143,6 +138,11 @@ function Survey () {
                 const response = await fetchSurveyDetail(surveyId);
                 setQuestionList(response.data.data.questions);
                 setIsSurveyEnabled(response.data.data.isEnabled);
+                if (response.data.data.questions.length > 0) {
+                    setSelectedQuestion(response.data.data.questions[0]);
+                } else {
+                    setSelectedQuestion(null);
+                }
             } catch (error) {
                 handleSessionExpiration(error);
             } finally {
@@ -167,27 +167,48 @@ function Survey () {
                         </button>
                     </div>
                     <div className="overflow-y-auto h-5/6">
-                        {isQuestionsLoading ? ("loading...."
+                        {isQuestionsLoading ? (
+                            <div className="fixed inset-0 flex items-center justify-center z-50 bg-white">
+                                <div className="border-gray-300 h-10 w-10 animate-spin rounded-full border-2 border-t-black"></div>
+                            </div>
                         ) : (
                             <div className="flex flex-col space-y-2">
-                                {questionList.map((question, index) => (
-                                    <button className={`flex flex-row items-center space-x-2 p-1 w-full ${selectedQuestion && selectedQuestion._id === question._id ? 'bg-gray-200' : 'hover:bg-gray-50'}`} key={question._id} onClick={() => handleQuestionClick(question._id)}>
-                                        <div className="text-sm">{index+1}</div>
-                                        <div className="bg-black text-white p-1">{questionTypes.find((type) => type.name === question.questiontype)?.icon || 'icon not found'}</div>
-                                        <div className="overflow-hidden">
-                                            {question.title ? (
-                                                <div className="text-xs truncate">{question.title}</div>
-                                            ) : (
-                                                <div className="font-semibold tracking-widest">...</div>
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
+                                {questionList.length === 0 ? (
+                                    <div className="flex justify-center text-md text-gray-400">No content</div>
+                                ) : (
+                                    questionList.map((question, index) => (
+                                        <button className={`flex flex-row items-center space-x-2 p-1 w-full ${selectedQuestion && selectedQuestion._id === question._id ? 'bg-gray-200' : 'hover:bg-gray-50'}`} key={question._id} onClick={() => handleQuestionClick(question._id)}>
+                                            <div className="text-sm">{index+1}</div>
+                                            <div className="bg-black text-white p-1">{questionTypes.find((type) => type.name === question.questiontype)?.icon || 'icon not found'}</div>
+                                            <div className="overflow-hidden">
+                                                {question.title ? (
+                                                    <div className="text-xs truncate">{question.title}</div>
+                                                ) : (
+                                                    <div className="font-semibold tracking-widest">...</div>
+                                                )}
+                                            </div>
+                                        </button>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
                 <div className="grow p-24 bg-gray-50">
+                    {questionList.length === 0 && (
+                        <div className="bg-white h-full w-full">
+                            <div className="flex flex-col justify-center items-center h-full">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-gray-600">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </div>
+                                <div className="text-gray-400 text-lg">It looks like your survey has no questions</div>
+                                <button onClick={questionTypesPopup.toggle} className="mt-4 p-2 border bg-black text-white font-semibold tracking-wider rounded-md text-sm hover:opacity-55">Add your first Question</button>
+                            </div>
+                        </div>
+                    )}
+                    
                     {selectedQuestion && (
                         <div className="relative shadow-md bg-white h-full w-full">
                             <button onClick={() => handleDeleteQuestion(selectedQuestion._id)} className="absolute text-red-500 bg-red-200 -top-3 -right-3 p-1 rounded-full hover:bg-red-300 hover:text-red-700">

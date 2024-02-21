@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {getWorkspaceList, createNewWorkspace, getWorkspaceDetail, getSearchWorkspace, updateWorkspace, deleteWorkspace, getSortedSurveysByWorkspace} from "../services/api/apiWorkspace";
+import {getWorkspaceList, createNewWorkspace, getSearchWorkspace, updateWorkspace, deleteWorkspace, getSortedSurveysByWorkspace} from "../services/api/apiWorkspace";
 import { createNewSurvey } from "../services/api/apiSurvey";
 import { useNavigate } from 'react-router-dom';
 import useAuth from "../hooks/useAuth";
@@ -79,14 +79,9 @@ function Workspace () {
       }
     };
 
-    const handleWorkspaceClick = async (workspaceId) => {
-      try {
-        const response = await getWorkspaceDetail(workspaceId);
-        setSelectedWorkspace(response.data.data);
-      } catch (error) {
-        handleSessionExpiration(error);
-        console.error('error fetching workspace detail', error);
-      }
+    const handleWorkspaceClick = (workspaceId) => {
+      const clickedWorkspace = workspaces.find(workspace => workspace._id === workspaceId);
+      setSelectedWorkspace(clickedWorkspace);
     };
 
     const handleUpdateWorkspaceName = async (workspaceId) => {
@@ -304,7 +299,7 @@ function Workspace () {
                         </div>  
                       </div>  
                     </div>
-                    <div className="py-4 h-2/3">
+                    <div className="py-4 h-1/2 overflow-y-auto">
                       {selectedWorkspace.survey.length === 0 ? (
                         <div className="flex flex-col justify-center items-center space-y-3">
                            <svg className="w-20 h-20 text-gray-400"xmlns="http://www.w3.org/2000/svg" width="24"  height="24"  viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">  
