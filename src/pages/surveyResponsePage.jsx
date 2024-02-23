@@ -16,6 +16,8 @@ function SurveyResponse () {
         responses: [],
     });
 
+    console.log(responseData);
+
     useEffect(() => {
         const fetchSurveyDetail = async () => {
             try {
@@ -23,10 +25,13 @@ function SurveyResponse () {
                 const response = await fetchSurveyByShareId(shareId);
                 setQuestionList(response.data.data.questions);
                 setIsSurveyEnabled(response.data.data.isEnabled);
-                setResponseData(prevState => ({
-                    ...prevState,
-                    survey: response.data.data._id
-                }));
+                setResponseData(prevState => {
+                    const initialData = response.data.data.questions.map(question => ({
+                        question: question._id,
+                        answer: null
+                    }));
+                    return {...prevState, survey: response.data.data._id, responses:initialData}
+                });
             } catch (error) {
                 if(error.response.data.status === 404 && error.response.data.error === "survey not found"){
                     setIsShareIdNotFound(true);
@@ -53,11 +58,10 @@ function SurveyResponse () {
 
     const handleAnswerChange = (e) => {
         const { value } = e.target;
-        const question = questionList[currentQuestionIndex]._id;
 
         setResponseData(prevState => {
             const updatedResponses = [...prevState.responses];
-            updatedResponses[currentQuestionIndex] = { question, answer: value };
+            updatedResponses[currentQuestionIndex] = { ...updatedResponses[currentQuestionIndex], answer: value || null };
             return {...prevState, responses: updatedResponses};
         });
     };

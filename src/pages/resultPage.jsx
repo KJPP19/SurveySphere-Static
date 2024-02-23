@@ -113,7 +113,7 @@ function Results () {
                                                     <div className="p-2 space-y-4">
                                                         {result.answers.map((answer, index) => (
                                                             <div className="flex items-center justify-between" key={index}>
-                                                                <div className="text-sm text-gray-700">{answer.value}</div>
+                                                                <div className="text-sm text-gray-700">{answer.value === "" || answer.value === null ? "no answer" : answer.value}</div>
                                                                 <div className="text-xs text-gray-400">{timePassed(answer.answeredAt)}</div>
                                                             </div>
                                                         ))}
@@ -123,7 +123,7 @@ function Results () {
                                                     <div className="p-2 space-y-4">
                                                         {result.answers.map((answer, index) => (
                                                             <div className="flex items-center justify-between" key={index}>
-                                                                <div className="text-sm text-gray-700">{answer.value}</div>
+                                                                <div className="text-sm text-gray-700">{answer.value === "" || answer.value === null ? "no answer" : answer.value}</div>
                                                                 <div className="text-xs text-gray-400">{timePassed(answer.answeredAt)}</div>
                                                             </div>
                                                         ))}
@@ -204,7 +204,7 @@ function Results () {
                                                     answer => answer.question === question._id
                                                 );
                                                 return (
-                                                    <td className="whitespace-nowrap p-2 border-b text-xs tracking-wide" key={questionList._id}>{answer ? answer.value : '------'}</td>
+                                                    <td className="whitespace-nowrap p-2 border-b text-xs tracking-wide" key={questionList._id}>{answer.value === "" || answer.value === null ? "no answer" : answer.value}</td>
                                                 )
                                             })}
                                         </tr>

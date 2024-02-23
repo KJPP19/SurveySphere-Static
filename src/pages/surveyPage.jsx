@@ -93,6 +93,7 @@ function Survey () {
     const handleQuestionClick = async (questionId) => {
         const clickedQuestion = questionList.find(question => question._id === questionId);
         setSelectedQuestion(clickedQuestion);
+        setIsQuestionRequired(clickedQuestion.isRequired);
     };
 
     const handleUpdateQuestionTitle = async (questionId) => {
