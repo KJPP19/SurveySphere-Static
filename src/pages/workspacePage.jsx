@@ -277,7 +277,7 @@ function Workspace () {
                           </div>
                       </div>
                       <div className="flex flex-row items-center justify-between">
-                        <button onClick={createSurveyPopup.toggle} className="text-white bg-black py-2 px-3 font-semibold rounded-md hover:opacity-70 tracking-wider text-sm">Create new survey</button>
+                        <button onClick={createSurveyPopup.toggle} className="text-white bg-black py-2 px-3 font-semibold rounded-md hover:opacity-70 tracking-wider text-sm transition-opacity duration-300">Create new survey</button>
                         <div className="relative">
                           <button onClick={sortbyDropDown.toggle} className="bg-gray-100 text-[#848484] px-3 py-2 rounded-md tracking-wide flex flex-row items-center space-x-10 text-sm border  hover:border-black hover:text-black cursor-pointer">
                             <div>

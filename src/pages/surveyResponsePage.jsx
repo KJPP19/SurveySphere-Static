@@ -16,6 +16,8 @@ function SurveyResponse () {
         responses: [],
     });
 
+    console.log(responseData);
+
     useEffect(() => {
         const fetchSurveyDetail = async () => {
             try {
